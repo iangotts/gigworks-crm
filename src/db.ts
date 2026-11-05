@@ -1,5 +1,9 @@
 import pg from 'pg';
 
+// Dates (no time) stay as 'YYYY-MM-DD' text. Turning them into JS Dates would shift them by
+// the server's time zone and show a gig on the wrong day.
+pg.types.setTypeParser(1082, (v) => v);
+
 export type Role = 'admin' | 'member' | 'read_only';
 
 export interface TenantContext {

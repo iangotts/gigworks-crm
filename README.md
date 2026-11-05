@@ -100,3 +100,18 @@ test/            API tests (vitest)
 ```
 
 Bubble CSV exports contain personal data. They are ignored by git and must stay out of the repo.
+
+## Web app (phase 3)
+
+The screens live in `web/` (React, Vite, TypeScript). The first screen is the gig pipeline.
+
+```bash
+# one terminal: the API on :3000
+npm run dev
+# another terminal: the web app on :5173, which proxies /api to :3000
+cd web && npm install && npm run dev
+```
+
+For production, run `cd web && npm run build`, then start the API. It serves `web/dist` and falls back to `index.html` for every page that is not under `/api`.
+
+Checks: `npm test` (backend, needs `DATABASE_URL`) and `cd web && npm test` (screen logic).
