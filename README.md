@@ -103,7 +103,7 @@ Bubble CSV exports contain personal data. They are ignored by git and must stay 
 
 ## Web app (phase 3)
 
-The screens live in `web/` (React, Vite, TypeScript): the gig pipeline, contacts with an activity log (call, voicemail, text, email, note, to-do), follow-ups and replies owed, and templates. The page is chosen by the address, for example `#/contacts`. Venues have no screen yet; they can still be picked and added from a gig.
+The screens live in `web/` (React, Vite, TypeScript): the gig pipeline, contacts with an activity log (call, voicemail, text, email, note, to-do), follow-ups and replies owed, templates, and links (a builder that tags a website address with UTM parameters for one contact or gig; no contact identifier goes in the address). The page is chosen by the address, for example `#/contacts`. Venues have no screen yet; they can still be picked and added from a gig.
 
 ```bash
 # one terminal: the API on :3000

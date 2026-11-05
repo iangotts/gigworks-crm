@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityLog } from './ActivityLog';
+import { LinkBuilder } from './LinkBuilder';
 import { contactName } from './activity';
 import { api, errorText } from './api';
 import { stageLabel } from './stages';
@@ -55,6 +56,7 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
   const [busy, setBusy] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [loaded, setLoaded] = useState(isNew);
+  const [logKey, setLogKey] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
 
   const load = async (): Promise<void> => {
@@ -186,7 +188,14 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
             {!isNew && contact && (
               <div className="section">
                 <h3>Activity</h3>
-                <ActivityLog contactId={contact.id} canEdit={canEdit} contactName={contactName(contact)} onChange={() => void load()} />
+                <ActivityLog contactId={contact.id} canEdit={canEdit} contactName={contactName(contact)} refresh={logKey} onChange={() => void load()} />
+              </div>
+            )}
+
+            {!isNew && contact && (
+              <div className="section">
+                <h3>Links</h3>
+                <LinkBuilder contactId={contact.id} canEdit={canEdit} onChange={() => setLogKey((n) => n + 1)} />
               </div>
             )}
             <div className="section" style={isNew ? { borderTop: 0 } : undefined}>

@@ -1159,3 +1159,50 @@ textarea {
     padding-bottom: 12px;
   }
 }
+
+/* links */
+.link-url {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.link-preview {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  color: var(--ink);
+}
+.link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.link-actions .btn {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.made {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-left: 4px solid var(--st-confirmed);
+  border-radius: 4px;
+}
+.tpl.off {
+  opacity: 0.7;
+}
+@media (max-width: 760px) {
+  .tabbar {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .tabbar a {
+    font-size: 12px;
+  }
+}

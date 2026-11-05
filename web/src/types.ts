@@ -140,3 +140,31 @@ export interface Followups {
   gigs: (FollowupGig & { next_action_at: string })[];
   replies: (FollowupGig & { reply_owed_by: string })[];
 }
+
+export interface LinkTarget {
+  id: string;
+  name: string;
+  url: string;
+  sort_order: number;
+  active: boolean;
+  sent: number;
+  clicks: number;
+}
+
+export interface BuiltLink {
+  id: string;
+  contact_id: string | null;
+  gig_id: string | null;
+  link_target_id: string | null;
+  destination_url: string;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  created_at: string;
+  target_name: string | null;
+  gig_title: string | null;
+  by_name: string | null;
+  clicks: number;
+  last_click_at: string | null;
+}

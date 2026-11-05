@@ -40,6 +40,8 @@ const MESSAGES: Record<string, string> = {
   invalid_request: 'Some details are not valid. Check the fields and try again.',
   bad_origin: 'This request was blocked. Reload the page and try again.',
   not_found: 'That record no longer exists. Reload the page.',
+  needs_link_or_url: 'Choose a link or type a web address.',
+  unknown_link_target: 'That link is not in this band.',
   template_name_exists: 'You already have a template with that name.',
   needs_contact_or_gig: 'Choose a contact or a gig to log this against.',
   unknown_contact_or_gig: 'That contact or gig is not in this band.',

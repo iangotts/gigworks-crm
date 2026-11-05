@@ -12,6 +12,7 @@ import { registerActivityRoutes } from './routes/activity.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerContactRoutes } from './routes/contacts.js';
 import { registerGigRoutes } from './routes/gigs.js';
+import { registerLinkRoutes } from './routes/links.js';
 import { registerTemplateRoutes } from './routes/templates.js';
 import { registerVenueRoutes } from './routes/venues.js';
 
@@ -64,6 +65,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   registerContactRoutes(app, deps);
   registerGigRoutes(app, deps);
   registerActivityRoutes(app, deps);
+  registerLinkRoutes(app, deps);
   registerTemplateRoutes(app, deps);
   registerVenueRoutes(app, deps);
 

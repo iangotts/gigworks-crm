@@ -4,6 +4,7 @@ import { BandPicker, Login } from './Login';
 import { BandContext } from './band';
 import { Contacts } from './Contacts';
 import { FollowUps } from './FollowUps';
+import { Links } from './Links';
 import { Pipeline } from './Pipeline';
 import { PAGES, usePage } from './route';
 import { Templates } from './Templates';
@@ -84,10 +85,11 @@ export default function App() {
         </div>
       </header>
       <main className="page">
-        <BandContext.Provider value={active.name}>
+        <BandContext.Provider value={{ name: active.name, slug: active.slug }}>
           {page === 'pipeline' && <Pipeline key={`${active.id}-${epoch}`} role={active.role} />}
           {page === 'contacts' && <Contacts key={`${active.id}-${epoch}`} role={active.role} />}
           {page === 'followups' && <FollowUps key={`${active.id}-${epoch}`} role={active.role} />}
+          {page === 'links' && <Links key={`${active.id}-${epoch}`} role={active.role} />}
           {page === 'templates' && <Templates key={`${active.id}-${epoch}`} role={active.role} />}
         </BandContext.Provider>
       </main>

@@ -13,6 +13,8 @@ interface Props {
   gigTitle?: string | null;
   /** Called after something is logged or changed, so the page around it can refresh. */
   onChange?: () => void;
+  /** Change this number to reload the log, for example after a link is built. */
+  refresh?: number;
 }
 
 const when = (iso: string): string => new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
@@ -25,7 +27,7 @@ function tomorrowNine(): string {
 }
 
 /** The running log for a contact or a gig: log a call, voicemail, text, email, note or to-do. */
-export function ActivityLog({ contactId, gigId, canEdit, contactName, gigTitle, onChange }: Props) {
+export function ActivityLog({ contactId, gigId, canEdit, contactName, gigTitle, onChange, refresh }: Props) {
   const band = useBandName();
   const [items, setItems] = useState<LogItem[] | null>(null);
   const [error, setError] = useState('');
@@ -47,7 +49,7 @@ export function ActivityLog({ contactId, gigId, canEdit, contactName, gigTitle, 
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, refresh]);
 
   // Templates are only offered for the kinds of message they are written for.
   const wantsTemplates = kind === 'email' || kind === 'text';

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
-export type Page = 'pipeline' | 'contacts' | 'followups' | 'templates';
+export type Page = 'pipeline' | 'contacts' | 'followups' | 'templates' | 'links';
 export const PAGES: { key: Page; label: string }[] = [
   { key: 'pipeline', label: 'Pipeline' },
   { key: 'contacts', label: 'Contacts' },
   { key: 'followups', label: 'Follow-ups' },
   { key: 'templates', label: 'Templates' },
+  { key: 'links', label: 'Links' },
 ];
 
 const read = (): Page => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText } from './api';
 import { ActivityLog } from './ActivityLog';
+import { LinkBuilder } from './LinkBuilder';
 import { STAGES } from './stages';
 import type { Gig, GigDetail } from './types';
 
@@ -54,6 +55,7 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [logKey, setLogKey] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
 
   const load = async (): Promise<void> => {
@@ -243,7 +245,12 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
 
             <div className="section">
               <h3>Activity</h3>
-              <ActivityLog gigId={id} canEdit={canEdit} contactName={detail.contact_name} gigTitle={detail.title} />
+              <ActivityLog gigId={id} canEdit={canEdit} contactName={detail.contact_name} gigTitle={detail.title} refresh={logKey} />
+            </div>
+
+            <div className="section">
+              <h3>Links</h3>
+              <LinkBuilder gigId={id} gigTitle={detail.title} canEdit={canEdit} onChange={() => setLogKey((n) => n + 1)} />
             </div>
             {error && (
               <p className="error-text" role="alert">
