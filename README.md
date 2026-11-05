@@ -6,7 +6,38 @@ The full plan, decisions and import rules are in the "GW-CRM: Gap Review and Bui
 
 ## Status
 
-Phase 1 is done: the tenant-aware Postgres schema, with row-level security and tests. The backend, login and screens come next (phases 2 and 3).
+Phase 1 is done: the tenant-aware Postgres schema, with row-level security and tests. Phase 2 is done: the Node and TypeScript backend with login, sessions and tenant switching. The screens come next (phase 3).
+
+## Backend
+
+Node 20 or later, TypeScript, Fastify, `pg`, `zod`. Copy `.env.example` to `.env` and set `DATABASE_URL`.
+
+```
+npm install
+npm run db:migrate && npm run db:seed
+GWCRM_PASSWORD='at least 12 characters' npm run create-user -- --email you@example.com \
+    --name "You" --membership janeblonde:admin --membership rocksolid:admin
+npm run dev            # http://localhost:3000
+npm test               # API tests, need DATABASE_URL
+npm run typecheck
+```
+
+| Endpoint | What it does |
+|---|---|
+| `POST /api/login` | Email and password. Sets an HttpOnly, SameSite=Lax session cookie. Goes straight into the band if the user has only one. Limited to 10 tries a minute per address. |
+| `POST /api/logout` | Ends the session. |
+| `GET /api/me` | The user, their bands and roles, and the band they are working in. |
+| `POST /api/session/tenant` | Choose which band to work in. Refused unless the user is a member. |
+| `GET /api/contacts`, `POST /api/contacts` | Tenant-scoped list (with search) and create. The first working example of the pattern every later endpoint follows. |
+
+How a request is handled:
+- The session cookie is looked up in the `session` table, which stores only a hash of the token.
+- The user's role in the chosen band is read from the database on every request, so removing a member or changing a role takes effect on their next request.
+- Tenant data is only touched through `withTenant`, which runs `SET LOCAL ROLE crm_app` and sets the tenant and role for that transaction. The tenant always comes from the session, never from the request body.
+- Changing requests from a browser with an unknown `Origin` header are refused.
+- Wrong password, unknown email and disabled user all return the same answer in the same time.
+
+Not done yet: password reset by email, inviting users from the screen (use `create-user` for now), and a per-account login lockout.
 
 ## Database
 
@@ -62,8 +93,10 @@ Rules:
 ```
 db/migrations/   numbered SQL, applied in order and recorded in schema_migrations
 db/seeds/        tenants and import rules
-db/tests/        tenant isolation tests
+db/tests/        tenant isolation tests (SQL)
 scripts/db.sh    migrate, seed, test, status
+src/             the API: app.ts, auth.ts, db.ts, sessions.ts, routes/, cli/
+test/            API tests (vitest)
 ```
 
 Bubble CSV exports contain personal data. They are ignored by git and must stay out of the repo.
