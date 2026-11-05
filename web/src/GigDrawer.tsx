@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText } from './api';
+import { ActivityLog } from './ActivityLog';
 import { STAGES } from './stages';
-import type { Activity, Gig, GigDetail } from './types';
+import type { Gig, GigDetail } from './types';
 
 type Form = Record<string, string | boolean>;
 
@@ -38,15 +39,6 @@ function diff(now: Form, was: Form): Record<string, unknown> {
   return out;
 }
 
-const KIND_TEXT: Record<Activity['kind'], string> = {
-  call: 'Call',
-  voicemail: 'Voicemail',
-  text: 'Text',
-  email: 'Email',
-  note: 'Note',
-  task: 'Task',
-};
-
 interface Props {
   id: string;
   canEdit: boolean;
@@ -57,7 +49,6 @@ interface Props {
 
 export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) {
   const [detail, setDetail] = useState<GigDetail | null>(null);
-  const [activity, setActivity] = useState<Activity[]>([]);
   const [form, setForm] = useState<Form>({});
   const [original, setOriginal] = useState<Form>({});
   const [error, setError] = useState('');
@@ -67,9 +58,8 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
 
   const load = async (): Promise<void> => {
     try {
-      const r = await api<{ gig: GigDetail; activity: Activity[] }>('GET', `/api/gigs/${id}`);
+      const r = await api<{ gig: GigDetail }>('GET', `/api/gigs/${id}`);
       setDetail(r.gig);
-      setActivity(r.activity);
       const f = toForm(r.gig);
       setForm(f);
       setOriginal(f);
@@ -252,23 +242,8 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
             </div>
 
             <div className="section">
-              <h3>History</h3>
-              {activity.length === 0 ? (
-                <p className="hint" style={{ margin: 0 }}>
-                  Nothing logged yet. Stage changes will appear here.
-                </p>
-              ) : (
-                <ul className="history">
-                  {activity.map((a) => (
-                    <li key={a.id}>
-                      <time dateTime={a.occurred_at}>
-                        {KIND_TEXT[a.kind]}, {new Date(a.occurred_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                      </time>
-                      {a.body}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <h3>Activity</h3>
+              <ActivityLog gigId={id} canEdit={canEdit} contactName={detail.contact_name} gigTitle={detail.title} />
             </div>
             {error && (
               <p className="error-text" role="alert">

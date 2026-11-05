@@ -8,9 +8,11 @@ import type pg from 'pg';
 import { ZodError } from 'zod';
 import type { Deps } from './auth.js';
 import type { Config } from './config.js';
+import { registerActivityRoutes } from './routes/activity.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerContactRoutes } from './routes/contacts.js';
 import { registerGigRoutes } from './routes/gigs.js';
+import { registerTemplateRoutes } from './routes/templates.js';
 import { registerVenueRoutes } from './routes/venues.js';
 
 export interface BuildOptions {
@@ -61,6 +63,8 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   registerAuthRoutes(app, deps, opts.loginLimit ?? 10);
   registerContactRoutes(app, deps);
   registerGigRoutes(app, deps);
+  registerActivityRoutes(app, deps);
+  registerTemplateRoutes(app, deps);
   registerVenueRoutes(app, deps);
 
   // One service: serve the built web app (web/dist) from the same address as the API, so the

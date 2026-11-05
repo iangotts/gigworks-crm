@@ -39,7 +39,11 @@ const MESSAGES: Record<string, string> = {
   email_exists: 'A contact with that email already exists in this band.',
   invalid_request: 'Some details are not valid. Check the fields and try again.',
   bad_origin: 'This request was blocked. Reload the page and try again.',
-  not_found: 'That gig no longer exists.',
+  not_found: 'That record no longer exists. Reload the page.',
+  template_name_exists: 'You already have a template with that name.',
+  needs_contact_or_gig: 'Choose a contact or a gig to log this against.',
+  unknown_contact_or_gig: 'That contact or gig is not in this band.',
+  only_tasks_have_due_date: 'Only a to-do can have a due date.',
 };
 
 export function errorText(err: unknown): string {

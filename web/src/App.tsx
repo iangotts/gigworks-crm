@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, setUnauthorizedHandler } from './api';
 import { BandPicker, Login } from './Login';
+import { BandContext } from './band';
+import { Contacts } from './Contacts';
+import { FollowUps } from './FollowUps';
 import { Pipeline } from './Pipeline';
+import { PAGES, usePage } from './route';
+import { Templates } from './Templates';
 import type { Me } from './types';
 
 export default function App() {
   const [me, setMe] = useState<Me | null | 'loading'>('loading');
   // Changes when the band changes, so the pipeline reloads from scratch.
   const [epoch, setEpoch] = useState(0);
+  const page = usePage();
 
   const refresh = useCallback(async (): Promise<void> => {
     try {
@@ -63,9 +69,11 @@ export default function App() {
             )}
           </div>
           <nav className="nav" aria-label="Main">
-            <a href="/" aria-current="page">
-              Pipeline
-            </a>
+            {PAGES.map((p) => (
+              <a key={p.key} href={`#/${p.key}`} aria-current={page === p.key ? 'page' : undefined}>
+                {p.label}
+              </a>
+            ))}
           </nav>
           <div className="header-end">
             <span className="who">{me.user.name ?? me.user.email}</span>
@@ -76,8 +84,20 @@ export default function App() {
         </div>
       </header>
       <main className="page">
-        <Pipeline key={`${active.id}-${epoch}`} role={active.role} />
+        <BandContext.Provider value={active.name}>
+          {page === 'pipeline' && <Pipeline key={`${active.id}-${epoch}`} role={active.role} />}
+          {page === 'contacts' && <Contacts key={`${active.id}-${epoch}`} role={active.role} />}
+          {page === 'followups' && <FollowUps key={`${active.id}-${epoch}`} role={active.role} />}
+          {page === 'templates' && <Templates key={`${active.id}-${epoch}`} role={active.role} />}
+        </BandContext.Provider>
       </main>
+      <nav className="tabbar" aria-label="Main">
+        {PAGES.map((p) => (
+          <a key={p.key} href={`#/${p.key}`} aria-current={page === p.key ? 'page' : undefined}>
+            {p.label}
+          </a>
+        ))}
+      </nav>
     </>
   );
 }

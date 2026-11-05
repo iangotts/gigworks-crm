@@ -70,3 +70,73 @@ export interface Pick {
   /** A second line in the list, such as an email address or a city. */
   hint?: string;
 }
+
+export type ActivityKind = 'call' | 'voicemail' | 'text' | 'email' | 'note' | 'task';
+
+/** One line of the log, for a contact or a gig. */
+export interface LogItem {
+  id: string;
+  kind: ActivityKind;
+  body: string | null;
+  occurred_at: string;
+  due_at: string | null;
+  completed_at: string | null;
+  contact_id: string | null;
+  gig_id: string | null;
+  gig_title: string | null;
+  contact_name: string | null;
+  by_name: string | null;
+}
+
+export interface ContactRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  job_title: string | null;
+  city: string | null;
+  tags: string[];
+  subscription: 'subscribed' | 'unsubscribed' | 'bounced' | 'suppressed' | null;
+  last_contact_at: string | null;
+  open_gigs: number;
+}
+
+export interface ContactFull extends ContactRow {
+  address: string | null;
+  source: string | null;
+  notes: string | null;
+}
+
+export interface ContactGig {
+  id: string;
+  title: string;
+  stage: StageKey;
+  postponed: boolean;
+  event_date: string | null;
+}
+
+export type TemplateKind = 'decline' | 'pitch' | 'follow_up' | 'other';
+export interface Template {
+  id: string;
+  name: string;
+  kind: TemplateKind;
+  subject: string | null;
+  body: string;
+}
+
+export interface FollowupGig {
+  id: string;
+  title: string;
+  stage: StageKey;
+  contact_id: string | null;
+  contact_name: string | null;
+  next_action_at?: string;
+  reply_owed_by?: string;
+}
+export interface Followups {
+  tasks: LogItem[];
+  gigs: (FollowupGig & { next_action_at: string })[];
+  replies: (FollowupGig & { reply_owed_by: string })[];
+}
