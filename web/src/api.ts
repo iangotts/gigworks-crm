@@ -12,7 +12,7 @@ export function setUnauthorizedHandler(fn: () => void): void {
   onUnauthorized = fn;
 }
 
-export async function api<T>(method: 'GET' | 'POST' | 'PATCH', url: string, body?: unknown): Promise<T> {
+export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT', url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method,
     credentials: 'same-origin',
@@ -40,6 +40,8 @@ const MESSAGES: Record<string, string> = {
   invalid_request: 'Some details are not valid. Check the fields and try again.',
   bad_origin: 'This request was blocked. Reload the page and try again.',
   not_found: 'That record no longer exists. Reload the page.',
+  needs_email: 'Add an email address to this contact first.',
+  needs_consent_source: 'Say where they agreed to hear from the band, for example at the 1 Nov gig.',
   needs_link_or_url: 'Choose a link or type a web address.',
   unknown_link_target: 'That link is not in this band.',
   template_name_exists: 'You already have a template with that name.',

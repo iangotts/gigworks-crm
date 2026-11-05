@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ago, contactName } from './activity';
 import { api, errorText } from './api';
+import { Subscribers } from './Subscribers';
 import { ContactDrawer } from './ContactDrawer';
 import { GigDrawer } from './GigDrawer';
 import type { ContactRow, Role } from './types';
@@ -20,6 +21,7 @@ export function Contacts({ role }: { role: Role }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [gigId, setGigId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  const [listOpen, setListOpen] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const say = (t: string): void => {
@@ -92,6 +94,9 @@ export function Contacts({ role }: { role: Role }) {
           <option value="name">Sort by name</option>
           <option value="recent">Sort by last contact</option>
         </select>
+        <button className="btn btn-secondary" onClick={() => setListOpen(true)}>
+          Email list
+        </button>
         {canEdit && (
           <button className="btn btn-primary" onClick={() => setOpenId('new')}>
             New contact
@@ -160,6 +165,7 @@ export function Contacts({ role }: { role: Role }) {
         </button>
       )}
 
+      {listOpen && <Subscribers canExport={canEdit} tags={tags.map((t) => t.tag)} onClose={() => setListOpen(false)} />}
       {openId && (
         <ContactDrawer
           key={openId}

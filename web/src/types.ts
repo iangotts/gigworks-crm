@@ -103,7 +103,15 @@ export interface ContactRow {
   open_gigs: number;
 }
 
+export interface Consent {
+  status: 'subscribed' | 'unsubscribed' | 'bounced' | 'suppressed';
+  consent_source: string | null;
+  consented_at: string | null;
+  unsubscribed_at: string | null;
+}
+
 export interface ContactFull extends ContactRow {
+  consent: Consent | null;
   address: string | null;
   source: string | null;
   notes: string | null;

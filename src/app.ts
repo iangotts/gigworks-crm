@@ -13,6 +13,8 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerContactRoutes } from './routes/contacts.js';
 import { registerGigRoutes } from './routes/gigs.js';
 import { registerLinkRoutes } from './routes/links.js';
+import { registerPublicRoutes } from './routes/public.js';
+import { registerSubscriberRoutes } from './routes/subscribers.js';
 import { registerTemplateRoutes } from './routes/templates.js';
 import { registerVenueRoutes } from './routes/venues.js';
 
@@ -20,6 +22,8 @@ export interface BuildOptions {
   logger?: boolean;
   /** Login attempts per minute per address. */
   loginLimit?: number;
+  /** Public form attempts per minute per address. */
+  publicLimit?: { subscribe: number; other: number };
   /** Where the built web app lives, relative to this file. Defaults to ../web/dist. */
   webDist?: string;
 }
@@ -65,6 +69,8 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   registerContactRoutes(app, deps);
   registerGigRoutes(app, deps);
   registerActivityRoutes(app, deps);
+  registerPublicRoutes(app, deps, opts.publicLimit ?? { subscribe: 5, other: 60 });
+  registerSubscriberRoutes(app, deps);
   registerLinkRoutes(app, deps);
   registerTemplateRoutes(app, deps);
   registerVenueRoutes(app, deps);

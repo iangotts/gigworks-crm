@@ -1,19 +1,23 @@
-/* GW-CRM styles. Follows the Regal Logic guide: warm cream pages, white surfaces with a fine gold
-   border, Newsreader headlines, Inter for everything else. Pages are light. The header and the
-   primary buttons are dark. Gold marks what is active. */
+/* GW-CRM styles. Pages are light (warm cream, white surfaces with a fine gold border). The header and
+   the primary buttons are dark. Colours come from the iangotts.com brand sheet (Theme.swift): deep
+   indigo for dark areas, vivid purple for secondary actions and focus, gold for what is active.
+   Headlines are Newsreader and interface text is Inter, from the Regal Logic guide. */
 
 :root {
   --cream: #fdfbf7;
   --dim: #f7f3e9; /* structural anchoring behind columns, like the guide's Surface-Dim */
   --surface: #ffffff;
-  --gold: #e8c460;
+  --gold: #e2c36a; /* gold light: borders, the header rule, the active marker */
+  --gold-deep: #c9a13c; /* brand gold, used sparingly */
+  --gold-pale: #f5e9c5;
   --gold-soft: #efe6cb; /* quiet dividers derived from the gold */
-  --ink: #121412;
-  --ink-2: #525450;
-  --charcoal: #121412;
-  --on-dark: #e3e3e0;
-  --on-dark-2: #c7c7c3;
-  --purple: #3f2a66; /* regal purple: secondary outlines, links and focus */
+  --ink: #1a1030; /* text on light pages: the indigo, nearly black */
+  --ink-2: #5b5470; /* secondary text, a muted purple-grey */
+  --charcoal: #180830; /* the dark: header, primary buttons, date stubs. Brand deep indigo */
+  --on-dark: #faf6ee;
+  --on-dark-2: #b4a3d6; /* lavender on the dark header */
+  --purple: #7b2fe0; /* brand vivid purple: secondary outlines, links and focus */
+  --purple-deep: #5019b0;
   --alert: #8f2a2a;
   --alert-bg: #fbeaea;
 
@@ -26,7 +30,7 @@
   --st-lost: #b05a5a;
 
   --radius: 6px;
-  --shadow-1: 0 1px 3px rgba(201, 162, 39, 0.22), 0 1px 2px rgba(18, 20, 18, 0.06);
+  --shadow-1: 0 1px 3px rgba(201, 162, 39, 0.22), 0 1px 2px rgba(24, 8, 48, 0.08);
   --serif: 'Newsreader Variable', Georgia, serif;
   --sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -146,6 +150,11 @@ textarea {
   font: 600 22px/1 var(--serif);
   align-self: center;
   letter-spacing: 0.01em;
+  /* the brand's pale gold to gold wordmark */
+  background: linear-gradient(90deg, var(--gold-pale), var(--gold), var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .band-switch {
   align-self: center;
@@ -607,7 +616,7 @@ textarea {
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(18, 20, 18, 0.45);
+  background: rgba(24, 8, 48, 0.5);
   z-index: 30;
   display: flex;
   justify-content: flex-end;
@@ -813,7 +822,7 @@ textarea {
     bottom: 16px;
     z-index: 25;
     min-height: 52px;
-    box-shadow: 0 2px 8px rgba(18, 20, 18, 0.3);
+    box-shadow: 0 2px 8px rgba(24, 8, 48, 0.35);
   }
 }
 @media (min-width: 761px) {
@@ -1206,3 +1215,34 @@ textarea {
     font-size: 12px;
   }
 }
+
+/* ---------- public pages and email list ---------- */
+.public {
+  min-height: 100vh;
+  background: var(--cream);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8vh 16px;
+}
+.public-card {
+  width: min(460px, 100%);
+  background: #fff;
+  border: 0.5pt solid var(--gold);
+  border-top: 6px solid var(--charcoal);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  display: grid;
+  gap: 12px;
+}
+.public-card h1 { font-size: 26px; }
+.public-band { color: var(--gold-deep); font-weight: 600; margin: 0; }
+.public-form { display: grid; gap: 14px; }
+.trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.consent { align-items: flex-start; }
+.sub-counts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.sub-counts div { display: grid; gap: 2px; }
+.sub-counts strong { font-size: 26px; color: var(--purple-deep); }
+.sub-counts span { color: var(--ink-2); font-size: 14px; }
+.consent-panel, .consent-edit { display: grid; gap: 10px; }
+a.btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }

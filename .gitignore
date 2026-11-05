@@ -8,3 +8,4 @@ exports/
 *.csv
 *.bubble
 dist/
+!.env.example

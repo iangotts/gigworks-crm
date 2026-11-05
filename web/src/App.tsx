@@ -5,12 +5,20 @@ import { BandContext } from './band';
 import { Contacts } from './Contacts';
 import { FollowUps } from './FollowUps';
 import { Links } from './Links';
+import { PublicSubscribe, PublicUnsubscribe, publicRoute } from './Public';
 import { Pipeline } from './Pipeline';
 import { PAGES, usePage } from './route';
 import { Templates } from './Templates';
 import type { Me } from './types';
 
 export default function App() {
+  // Subscribe and unsubscribe pages are for anyone, so they never ask for a login.
+  const open = publicRoute(window.location.pathname);
+  if (open) return open.kind === 'subscribe' ? <PublicSubscribe slug={open.value} /> : <PublicUnsubscribe token={open.value} />;
+  return <Crm />;
+}
+
+function Crm() {
   const [me, setMe] = useState<Me | null | 'loading'>('loading');
   // Changes when the band changes, so the pipeline reloads from scratch.
   const [epoch, setEpoch] = useState(0);

@@ -96,14 +96,16 @@ export function registerContactRoutes(app: FastifyInstance, deps: Deps): void {
     const out = await withTenant(deps.pool, ctx, async (c) => {
       const contact = await c.query(`${LIST_SQL} WHERE c.id = $1 AND c.archived_at IS NULL`, [id]);
       if (contact.rowCount === 0) return null;
-      const full = await c.query(`SELECT address, source, notes FROM contact WHERE id = $1`, [id]);
+      const full = await c.query(`SELECT address, source, notes, is_local FROM contact WHERE id = $1`, [id]);
+      const sub = await c.query(
+        `SELECT status, consent_source, consented_at, unsubscribed_at FROM subscription WHERE contact_id = $1`, [id]);
       const gigs = await c.query(
         `SELECT id, title, stage, postponed, event_date FROM gig
           WHERE contact_id = $1 AND archived_at IS NULL
           ORDER BY event_date DESC NULLS FIRST, created_at DESC LIMIT 50`,
         [id],
       );
-      return { contact: { ...contact.rows[0], ...full.rows[0] }, gigs: gigs.rows };
+      return { contact: { ...contact.rows[0], ...full.rows[0], consent: sub.rows[0] ?? null }, gigs: gigs.rows };
     });
     if (!out) return reply.code(404).send({ error: 'not_found' });
     return out;

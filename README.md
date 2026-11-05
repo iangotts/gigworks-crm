@@ -39,6 +39,13 @@ How a request is handled:
 
 Not done yet: password reset by email, inviting users from the screen (use `create-user` for now), and a per-account login lockout.
 
+## Subscribe and unsubscribe (phase 5)
+
+- Public pages, no login: `/subscribe/<band slug>` and `/unsubscribe/<token>`. The unsubscribe link is signed per contact and never expires. The export puts one in every row.
+- Set `FORM_SECRET` (required in production, keep it stable or old unsubscribe links stop working) and `PUBLIC_URL` (the address people see). The public address must also be in `ALLOWED_ORIGINS`.
+- Sign-up is single opt-in with a consent tickbox, a hidden trap field, a minimum fill time and rate limits. A form never re-subscribes someone who unsubscribed, bounced or is suppressed.
+- Export: Contacts, then Email list, then Download CSV. Admins and members only. Only people with a `subscribed` record are included.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.

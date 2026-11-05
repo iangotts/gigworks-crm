@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityLog } from './ActivityLog';
+import { ConsentPanel } from './ConsentPanel';
 import { LinkBuilder } from './LinkBuilder';
 import { contactName } from './activity';
 import { api, errorText } from './api';
@@ -189,6 +190,22 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
               <div className="section">
                 <h3>Activity</h3>
                 <ActivityLog contactId={contact.id} canEdit={canEdit} contactName={contactName(contact)} refresh={logKey} onChange={() => void load()} />
+              </div>
+            )}
+
+            {!isNew && contact && (
+              <div className="section">
+                <h3>Email consent</h3>
+                <ConsentPanel
+                  contactId={contact.id}
+                  email={contact.email}
+                  consent={contact.consent}
+                  canEdit={canEdit}
+                  onChanged={() => {
+                    setLogKey((n) => n + 1);
+                    void load();
+                  }}
+                />
               </div>
             )}
 
