@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityLog } from './ActivityLog';
+import { EmailComposer } from './EmailComposer';
 import { ConsentPanel } from './ConsentPanel';
 import { LinkBuilder } from './LinkBuilder';
 import { contactName } from './activity';
@@ -58,6 +59,7 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [loaded, setLoaded] = useState(isNew);
   const [logKey, setLogKey] = useState(0);
+  const [composing, setComposing] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
 
   const load = async (): Promise<void> => {
@@ -81,7 +83,7 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !document.querySelector('.scrim.center')) onClose(); // a dialog on top closes first
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -153,6 +155,11 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
               <div className="quick">
                 {contact.phone && <a href={`tel:${contact.phone}`}>Call {contact.phone}</a>}
                 {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
+                {contact.email && canEdit && (
+                  <button type="button" className="btn btn-secondary" onClick={() => setComposing(true)}>
+                    Send email
+                  </button>
+                )}
                 {contact.subscription && (
                   <span className={`chip${contact.subscription === 'subscribed' ? '' : ' alert'}`}>{SUB_TEXT[contact.subscription]}</span>
                 )}
@@ -278,6 +285,16 @@ export function ContactDrawer({ id, canEdit, onClose, onSaved, onArchived, onOpe
           </div>
         )}
       </div>
+      {composing && contact && (
+        <EmailComposer
+          contactId={contact.id}
+          onClose={() => setComposing(false)}
+          onSent={() => {
+            setLogKey((n) => n + 1);
+            void load();
+          }}
+        />
+      )}
     </div>
   );
 }

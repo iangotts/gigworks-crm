@@ -46,6 +46,12 @@ Not done yet: password reset by email, inviting users from the screen (use `crea
 - Sign-up is single opt-in with a consent tickbox, a hidden trap field, a minimum fill time and rate limits. A form never re-subscribes someone who unsubscribed, bounced or is suppressed.
 - Export: Contacts, then Email list, then Download CSV. Admins and members only. Only people with a `subscribed` record are included.
 
+## One-to-one email (phase 6)
+
+- Admins set who mail comes from and where replies go (Templates, then Email settings). Contacts and gigs get a Send email button. A person presses Send every time, and the message is saved in the activity log exactly as it went out, with the provider's message id.
+- Set `SENDGRID_API_KEY` (and optionally `EMAIL_DAILY_CAP`). Without a key, local work keeps mail in memory and production refuses to send. The From address must be verified in SendGrid or messages are refused.
+- Sent emails cannot be edited. Bounced and blocked addresses are refused, and an unsubscribed person needs an explicit confirm. Open and click tracking are turned off so tagged links stay as written.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.

@@ -27,8 +27,8 @@ const updateBody = z
 const listQuery = z.object({ contact_id: z.string().uuid().optional(), gig_id: z.string().uuid().optional() });
 const idParam = z.object({ id: z.string().uuid() });
 
-const SELECT = `
-  SELECT a.id, a.kind, a.body, a.occurred_at, a.due_at, a.completed_at, a.contact_id, a.gig_id,
+export const ACTIVITY_SELECT = `
+  SELECT a.id, a.kind, a.body, a.subject, a.email_to, a.delivery, a.delivery_error, a.occurred_at, a.due_at, a.completed_at, a.contact_id, a.gig_id,
          g.title AS gig_title,
          nullif(trim(concat_ws(' ', c.first_name, c.last_name)), '') AS contact_name,
          u.name AS by_name
@@ -48,7 +48,7 @@ export function registerActivityRoutes(app: FastifyInstance, deps: Deps): void {
     if (!q.contact_id && !q.gig_id) return reply.code(400).send({ error: 'needs_contact_or_gig' });
     const res = await withTenant(deps.pool, ctx, (c) =>
       c.query(
-        `${SELECT}
+        `${ACTIVITY_SELECT}
           WHERE ($1::uuid IS NULL OR a.contact_id = $1) AND ($2::uuid IS NULL OR a.gig_id = $2)
           ORDER BY a.occurred_at DESC, a.created_at DESC LIMIT 200`,
         [q.contact_id ?? null, q.gig_id ?? null],
@@ -74,7 +74,7 @@ export function registerActivityRoutes(app: FastifyInstance, deps: Deps): void {
            RETURNING id`,
           [ctx.tenantId, b.kind, b.contact_id ?? null, b.gig_id ?? null, b.body, b.occurred_at ?? null, b.due_at ?? null, ctx.userId],
         );
-        return c.query(`${SELECT} WHERE a.id = $1`, [(ins.rows[0] as { id: string }).id]);
+        return c.query(`${ACTIVITY_SELECT} WHERE a.id = $1`, [(ins.rows[0] as { id: string }).id]);
       });
       return reply.code(201).send(out.rows[0]);
     } catch (err) {
@@ -99,11 +99,17 @@ export function registerActivityRoutes(app: FastifyInstance, deps: Deps): void {
     values.push(id);
     try {
       const out = await withTenant(deps.pool, ctx, async (c) => {
-        const r = await c.query(`UPDATE activity SET ${sets.join(', ')} WHERE id = $${values.length} RETURNING id`, values);
-        if (r.rowCount === 0) return null;
-        return c.query(`${SELECT} WHERE a.id = $1`, [id]);
+        // The record of an email we sent is not editable, so the log stays true to what went out.
+        const lock = b.body !== undefined ? ' AND delivery IS NULL' : '';
+        const r = await c.query(`UPDATE activity SET ${sets.join(', ')} WHERE id = $${values.length}${lock} RETURNING id`, values);
+        if (r.rowCount === 0) {
+          const exists = await c.query('SELECT 1 FROM activity WHERE id = $1', [id]);
+          return exists.rows[0] ? 'locked' : null;
+        }
+        return c.query(`${ACTIVITY_SELECT} WHERE a.id = $1`, [id]);
       });
       if (!out) return reply.code(404).send({ error: 'not_found' });
+      if (out === 'locked') return reply.code(409).send({ error: 'sent_email_locked' });
       return out.rows[0];
     } catch (err) {
       // The table only lets tasks carry a due date or a completed time.
@@ -118,7 +124,7 @@ export function registerActivityRoutes(app: FastifyInstance, deps: Deps): void {
     if (!ctx) return reply;
     const out = await withTenant(deps.pool, ctx, async (c) => {
       const tasks = await c.query(
-        `${SELECT} WHERE a.kind = 'task' AND a.completed_at IS NULL
+        `${ACTIVITY_SELECT} WHERE a.kind = 'task' AND a.completed_at IS NULL
           ORDER BY a.due_at NULLS LAST, a.created_at LIMIT 500`,
       );
       const open = `g.archived_at IS NULL AND g.stage NOT IN ('played', 'lost')`;

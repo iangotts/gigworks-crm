@@ -10,7 +10,9 @@ import type { Deps } from './auth.js';
 import type { Config } from './config.js';
 import { registerActivityRoutes } from './routes/activity.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { logProvider, noProvider, sendGridProvider, type EmailProvider } from './email.js';
 import { registerContactRoutes } from './routes/contacts.js';
+import { registerEmailRoutes } from './routes/email.js';
 import { registerGigRoutes } from './routes/gigs.js';
 import { registerLinkRoutes } from './routes/links.js';
 import { registerPublicRoutes } from './routes/public.js';
@@ -24,6 +26,8 @@ export interface BuildOptions {
   loginLimit?: number;
   /** Public form attempts per minute per address. */
   publicLimit?: { subscribe: number; other: number };
+  /** Replaces the configured email provider. Tests pass a fake. */
+  emailProvider?: EmailProvider;
   /** Where the built web app lives, relative to this file. Defaults to ../web/dist. */
   webDist?: string;
 }
@@ -71,6 +75,11 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   registerActivityRoutes(app, deps);
   registerPublicRoutes(app, deps, opts.publicLimit ?? { subscribe: 5, other: 60 });
   registerSubscriberRoutes(app, deps);
+  registerEmailRoutes(
+    app,
+    deps,
+    opts.emailProvider ?? (config.emailProvider === 'sendgrid' ? sendGridProvider(config.sendgridKey) : config.emailProvider === 'log' ? logProvider() : noProvider()),
+  );
   registerLinkRoutes(app, deps);
   registerTemplateRoutes(app, deps);
   registerVenueRoutes(app, deps);

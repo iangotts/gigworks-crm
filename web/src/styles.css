@@ -1246,3 +1246,8 @@ textarea {
 .sub-counts span { color: var(--ink-2); font-size: 14px; }
 .consent-panel, .consent-edit { display: grid; gap: 10px; }
 a.btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }
+
+/* ---------- sent email in the log ---------- */
+.log-subject { display: block; }
+.contact-box .btn { justify-self: start; min-height: 34px; padding: 0 12px; }
+.quick .btn { min-height: 34px; padding: 0 12px; }

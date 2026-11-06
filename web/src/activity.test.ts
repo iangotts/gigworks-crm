@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ago, contactName, dueText, dueTone, renderTemplate } from './activity';
+import { ago, hasUnfilled, contactName, dueText, dueTone, renderTemplate } from './activity';
 
 const now = new Date(2026, 10, 5, 15, 0); // Nov 5 2026, 3pm local
 
@@ -48,5 +48,13 @@ describe('contactName', () => {
     expect(contactName({ first_name: 'A', last_name: 'B', email: null })).toBe('A B');
     expect(contactName({ first_name: null, last_name: null, email: 'x@y.z' })).toBe('x@y.z');
     expect(contactName({ first_name: null, last_name: null, email: null })).toBe('No name');
+  });
+});
+
+describe('hasUnfilled', () => {
+  it('spots a merge field left in the text', () => {
+    expect(hasUnfilled('Hi {first_name}')).toBe(true);
+    expect(hasUnfilled('Hi Priya, {unknown} stays')).toBe(false);
+    expect(hasUnfilled('Hi Priya')).toBe(false);
   });
 });

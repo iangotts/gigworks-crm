@@ -194,8 +194,14 @@ export function ActivityLog({ contactId, gigId, canEdit, contactName, gigTitle, 
                     <span className={a.completed_at ? 'done' : undefined}>{a.body}</span>
                   </label>
                 ) : (
-                  <span className="log-body">{a.body}</span>
+                  <>
+                    {a.subject && <strong className="log-subject">{a.subject}</strong>}
+                    {a.email_to && <span className="hint" style={{ margin: 0 }}>To {a.email_to}</span>}
+                    <span className="log-body">{a.body}</span>
+                  </>
                 )}
+                {a.delivery === 'failed' && <span className="chip alert">Not sent. {a.delivery_error}</span>}
+                {a.delivery === 'sending' && <span className="chip alert">Not confirmed. Check your sent mail before trying again.</span>}
                 {a.kind === 'task' && (
                   <span className={`chip${tone === 'overdue' ? ' alert' : ''}`}>
                     {a.completed_at ? `Done ${ago(a.completed_at).toLowerCase()}` : a.due_at ? dueText(a.due_at) : 'No due date'}

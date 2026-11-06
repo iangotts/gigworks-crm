@@ -86,6 +86,17 @@ export interface LogItem {
   gig_title: string | null;
   contact_name: string | null;
   by_name: string | null;
+  subject?: string | null;
+  email_to?: string | null;
+  delivery?: 'sending' | 'sent' | 'failed' | null;
+  delivery_error?: string | null;
+}
+
+export interface EmailSettings {
+  from_name: string;
+  from_email: string;
+  reply_to: string;
+  signature: string | null;
 }
 
 export interface ContactRow {

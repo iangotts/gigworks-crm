@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText } from './api';
 import { ActivityLog } from './ActivityLog';
+import { EmailComposer } from './EmailComposer';
 import { LinkBuilder } from './LinkBuilder';
 import { STAGES } from './stages';
 import type { Gig, GigDetail } from './types';
@@ -56,6 +57,7 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
   const [busy, setBusy] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [logKey, setLogKey] = useState(0);
+  const [composing, setComposing] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
 
   const load = async (): Promise<void> => {
@@ -77,7 +79,7 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !document.querySelector('.scrim.center')) onClose(); // a dialog on top closes first
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -179,6 +181,11 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
               <div className="contact-box">
                 <strong>{detail.contact_name ?? 'No contact yet'}</strong>
                 {detail.contact_email && <a href={`mailto:${detail.contact_email}`}>{detail.contact_email}</a>}
+                {detail.contact_email && detail.contact_id && canEdit && (
+                  <button type="button" className="btn btn-secondary" onClick={() => setComposing(true)}>
+                    Send email
+                  </button>
+                )}
                 {detail.contact_phone && <a href={`tel:${detail.contact_phone}`}>{detail.contact_phone}</a>}
               </div>
               <div className="contact-box">
@@ -292,6 +299,15 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
           </div>
         )}
       </div>
+      {composing && detail?.contact_id && (
+        <EmailComposer
+          contactId={detail.contact_id}
+          gigId={id}
+          gigTitle={detail.title}
+          onClose={() => setComposing(false)}
+          onSent={() => setLogKey((n) => n + 1)}
+        />
+      )}
     </div>
   );
 }

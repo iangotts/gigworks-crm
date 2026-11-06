@@ -2,6 +2,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     public code: string,
+    /** Plain-language detail from the server, such as why the email service refused a message. */
+    public detail?: string,
   ) {
     super(code);
   }
@@ -20,11 +22,11 @@ export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT', url: stri
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (res.status === 204) return undefined as T;
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
   if (!res.ok) {
     // A 401 anywhere else than the login form means the session ended.
     if (res.status === 401 && url !== '/api/login') onUnauthorized();
-    throw new ApiError(res.status, data.error ?? 'request_failed');
+    throw new ApiError(res.status, data.error ?? 'request_failed', data.message);
   }
   return data as T;
 }
@@ -40,6 +42,17 @@ const MESSAGES: Record<string, string> = {
   invalid_request: 'Some details are not valid. Check the fields and try again.',
   bad_origin: 'This request was blocked. Reload the page and try again.',
   not_found: 'That record no longer exists. Reload the page.',
+  email_not_set_up: 'Set up who the email comes from first. An admin can do this on the Templates page.',
+  email_not_configured: 'Email sending is not turned on for this server yet.',
+  address_blocked: 'This address bounced or is blocked, so it cannot be emailed.',
+  unsubscribed: 'They unsubscribed from band news. Tick the box to send this one-to-one email anyway.',
+  unfilled_placeholder: 'Fill in the {placeholders} first.',
+  daily_limit: 'This band has reached its limit of emails for 24 hours.',
+  send_failed: 'The email was not sent.',
+  sent_email_locked: 'An email that was sent cannot be edited.',
+  admin_only: 'Only an admin can change this.',
+  contact_not_found: 'That contact no longer exists.',
+  no_email: 'This contact has no email address.',
   needs_email: 'Add an email address to this contact first.',
   needs_consent_source: 'Say where they agreed to hear from the band, for example at the 1 Nov gig.',
   needs_link_or_url: 'Choose a link or type a web address.',
@@ -52,7 +65,8 @@ const MESSAGES: Record<string, string> = {
 
 export function errorText(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.status === 429) return 'Too many attempts. Wait a minute and try again.';
+    if (err.status === 429 && err.code !== 'daily_limit') return 'Too many attempts. Wait a minute and try again.';
+    if (err.code === 'send_failed' && err.detail) return `${MESSAGES.send_failed} ${err.detail}`;
     return MESSAGES[err.code] ?? 'Something went wrong. Try again.';
   }
   return 'Could not reach the server. Check your connection and try again.';

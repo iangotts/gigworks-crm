@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { PLACEHOLDERS, TEMPLATE_KINDS, templateKindLabel } from './activity';
 import { api, errorText } from './api';
+import { EmailSettingsDialog } from './EmailSettingsDialog';
 import type { Role, Template, TemplateKind } from './types';
 
 interface Draft {
@@ -14,6 +15,7 @@ const blank: Draft = { id: null, name: '', kind: 'pitch', subject: '', body: '' 
 
 export function Templates({ role }: { role: Role }) {
   const canEdit = role !== 'read_only';
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [list, setList] = useState<Template[] | null>(null);
   const [error, setError] = useState('');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -53,6 +55,9 @@ export function Templates({ role }: { role: Role }) {
         <h1>
           Templates<span className="count">{list?.length ?? 0}</span>
         </h1>
+        <button className="btn btn-secondary" onClick={() => setSettingsOpen(true)}>
+          Email settings
+        </button>
         {canEdit && (
           <button className="btn btn-primary" onClick={() => setDraft({ ...blank })}>
             New template
@@ -109,6 +114,7 @@ export function Templates({ role }: { role: Role }) {
           {toast}
         </div>
       )}
+      {settingsOpen && <EmailSettingsDialog canEdit={role === 'admin'} onClose={() => setSettingsOpen(false)} />}
     </>
   );
 }

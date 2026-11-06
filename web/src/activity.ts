@@ -26,6 +26,9 @@ export function renderTemplate(text: string, vars: Partial<Record<'first_name' |
   return text.replace(/\{(first_name|name|band|gig)\}/g, (whole, key: 'first_name' | 'name' | 'band' | 'gig') => vars[key] || whole);
 }
 
+/** True while a {first_name}, {name}, {band} or {gig} is still in the text. */
+export const hasUnfilled = (text: string): boolean => /\{(first_name|name|band|gig)\}/.test(text);
+
 export function contactName(c: Pick<ContactRow, 'first_name' | 'last_name' | 'email'>): string {
   return [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'No name';
 }
