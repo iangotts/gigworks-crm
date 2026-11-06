@@ -1251,3 +1251,8 @@ a.btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }
 .log-subject { display: block; }
 .contact-box .btn { justify-self: start; min-height: 34px; padding: 0 12px; }
 .quick .btn { min-height: 34px; padding: 0 12px; }
+
+/* ---------- calendar ---------- */
+.cal-members { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cal-members li.busy { color: var(--alert); }
+.cal-members li.free { color: var(--ink-2); }

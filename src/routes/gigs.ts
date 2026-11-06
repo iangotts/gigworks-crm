@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type pg from 'pg';
 import { z } from 'zod';
+import type { CalendarService } from '../calendar.js';
 import { authenticate, type Deps } from '../auth.js';
 import { withTenant, type TenantContext } from '../db.js';
 
@@ -82,7 +83,7 @@ const DETAIL_SQL = `
 
 const idParam = z.object({ id: z.string().uuid() });
 
-export function registerGigRoutes(app: FastifyInstance, deps: Deps): void {
+export function registerGigRoutes(app: FastifyInstance, deps: Deps, calendar: CalendarService | null = null): void {
   const needTenant = async (req: FastifyRequest, reply: FastifyReply): Promise<TenantContext | null> => {
     const auth = await authenticate(deps, req);
     if (!auth) {
@@ -168,6 +169,8 @@ export function registerGigRoutes(app: FastifyInstance, deps: Deps): void {
         const row = await c.query(`${LIST_SQL} WHERE g.id = $1`, [id]);
         return row.rows[0];
       });
+      // A gig can be created already confirmed. Never let a calendar problem fail the save.
+      await calendar?.sync(ctx, (out as { id: string }).id);
       return reply.code(201).send(out);
     } catch (err) {
       const e = fkError(err);
@@ -220,6 +223,8 @@ export function registerGigRoutes(app: FastifyInstance, deps: Deps): void {
       });
       if (out.error === 'not_found') return reply.code(404).send({ error: 'not_found' });
       if (out.error) return reply.code(400).send({ error: out.error });
+      // Keep the calendar event in step. A problem is recorded on the gig and never fails the save.
+      await calendar?.sync(ctx, id);
       return out.row;
     } catch (err) {
       const e = fkError(err);

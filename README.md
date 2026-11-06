@@ -52,6 +52,14 @@ Not done yet: password reset by email, inviting users from the screen (use `crea
 - Set `SENDGRID_API_KEY` (and optionally `EMAIL_DAILY_CAP`). Without a key, local work keeps mail in memory and production refuses to send. The From address must be verified in SendGrid or messages are refused.
 - Sent emails cannot be edited. Bounced and blocked addresses are refused, and an unsubscribed person needs an explicit confirm. Open and click tracking are turned off so tagged links stay as written.
 
+## Google Calendar link (phase 7)
+
+- Each person connects their own Google Calendar (the Calendar button in the header) and chooses which calendar each band may check. The band sees only the times someone is busy, never event names.
+- An admin chooses where confirmed gigs go. A gig that is Confirmed (and not postponed) or Played gets an event with its place and times. The event moves when the gig changes and is removed when it is lost, postponed, archived or loses its date. Fees and notes are never put in the event.
+- Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `CALENDAR_KEY` (encrypts the stored sign-ins; required in production). Register `<PUBLIC_URL>/api/calendar/callback` as the redirect address in Google Cloud. Leave them blank and the calendar link is simply off.
+- Google keeps refresh tokens for an app in "Testing" status for only 7 days. Publish the app (it can stay unverified for a small group) so sign-ins last.
+- A calendar problem never blocks saving a gig. It shows on the gig with a Try again button.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.

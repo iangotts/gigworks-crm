@@ -11,6 +11,9 @@ import type { Config } from './config.js';
 import { registerActivityRoutes } from './routes/activity.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { logProvider, noProvider, sendGridProvider, type EmailProvider } from './email.js';
+import { CalendarService } from './calendar.js';
+import { realGoogle, type GoogleClient } from './google.js';
+import { registerCalendarRoutes } from './routes/calendar.js';
 import { registerContactRoutes } from './routes/contacts.js';
 import { registerEmailRoutes } from './routes/email.js';
 import { registerGigRoutes } from './routes/gigs.js';
@@ -28,6 +31,8 @@ export interface BuildOptions {
   publicLimit?: { subscribe: number; other: number };
   /** Replaces the configured email provider. Tests pass a fake. */
   emailProvider?: EmailProvider;
+  /** Replaces the real Google client. Tests pass a fake. */
+  google?: GoogleClient;
   /** Where the built web app lives, relative to this file. Defaults to ../web/dist. */
   webDist?: string;
 }
@@ -71,7 +76,14 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
 
   registerAuthRoutes(app, deps, opts.loginLimit ?? 10);
   registerContactRoutes(app, deps);
-  registerGigRoutes(app, deps);
+  const google =
+    opts.google ??
+    (config.googleClientId
+      ? realGoogle({ clientId: config.googleClientId, clientSecret: config.googleClientSecret, redirectUri: `${config.publicUrl}/api/calendar/callback` })
+      : null);
+  const calendar = google ? new CalendarService(pool, config, google) : null;
+  registerGigRoutes(app, deps, calendar);
+  registerCalendarRoutes(app, deps, calendar);
   registerActivityRoutes(app, deps);
   registerPublicRoutes(app, deps, opts.publicLimit ?? { subscribe: 5, other: 60 });
   registerSubscriberRoutes(app, deps);

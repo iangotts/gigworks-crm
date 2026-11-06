@@ -16,6 +16,11 @@ export interface Config {
   sendgridKey: string;
   /** Most one-to-one emails a band can send in 24 hours. A runaway guard, not a quota. */
   emailDailyCap: number;
+  /** Google sign-in for the calendar link. Empty means the calendar link is off. */
+  googleClientId: string;
+  googleClientSecret: string;
+  /** Encrypts Google refresh tokens in the database. */
+  calendarKey: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -40,6 +45,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (asked && !['sendgrid', 'log', 'none'].includes(asked)) throw new Error('EMAIL_PROVIDER must be sendgrid, log or none');
   const emailProvider = (asked as Config['emailProvider'] | undefined) ?? (sendgridKey ? 'sendgrid' : env.NODE_ENV === 'production' ? 'none' : 'log');
   if (emailProvider === 'sendgrid' && !sendgridKey) throw new Error('SENDGRID_API_KEY is required when EMAIL_PROVIDER is sendgrid');
+  const googleClientId = env.GOOGLE_CLIENT_ID ?? '';
+  const googleClientSecret = env.GOOGLE_CLIENT_SECRET ?? '';
+  if (Boolean(googleClientId) !== Boolean(googleClientSecret)) throw new Error('Set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or neither');
+  let calendarKey = env.CALENDAR_KEY ?? '';
+  if (!calendarKey) {
+    if (googleClientId && env.NODE_ENV === 'production') throw new Error('CALENDAR_KEY is required in production when Google is set up. It encrypts the calendar sign-ins.');
+    calendarKey = formSecret; // local work and tests only
+  }
   return {
     databaseUrl,
     port: num(env.PORT, 3000),
@@ -50,6 +63,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     formSecret,
     emailProvider,
     sendgridKey,
+    googleClientId,
+    googleClientSecret,
+    calendarKey,
     emailDailyCap: num(env.EMAIL_DAILY_CAP, 200),
     publicUrl: (env.PUBLIC_URL ?? allowedOrigins[0] ?? 'http://localhost:5173').replace(/\/+$/, ''),
   };

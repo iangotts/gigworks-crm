@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText } from './api';
 import { ActivityLog } from './ActivityLog';
+import { CalendarPanel } from './CalendarPanel';
 import { EmailComposer } from './EmailComposer';
 import { LinkBuilder } from './LinkBuilder';
 import { STAGES } from './stages';
@@ -249,6 +250,8 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
                 <textarea id="f-notes" disabled={!canEdit} value={String(form.notes)} onChange={(e) => set('notes', e.target.value)} />
               </div>
             </div>
+
+            <CalendarPanel gigId={id} canEdit={canEdit} refresh={`${detail.updated_at}|${detail.stage}`} />
 
             <div className="section">
               <h3>Activity</h3>

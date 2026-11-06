@@ -7,6 +7,7 @@ import { FollowUps } from './FollowUps';
 import { Links } from './Links';
 import { PublicSubscribe, PublicUnsubscribe, publicRoute } from './Public';
 import { Pipeline } from './Pipeline';
+import { CalendarDialog } from './CalendarDialog';
 import { PAGES, usePage } from './route';
 import { Templates } from './Templates';
 import type { Me } from './types';
@@ -22,6 +23,13 @@ function Crm() {
   const [me, setMe] = useState<Me | null | 'loading'>('loading');
   // Changes when the band changes, so the pipeline reloads from scratch.
   const [epoch, setEpoch] = useState(0);
+  // Google sends the browser back with ?calendar=connected, declined or failed.
+  const [calendar, setCalendar] = useState<{ notice?: string } | null>(() => {
+    const flag = new URLSearchParams(window.location.search).get('calendar');
+    if (!flag) return null;
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`);
+    return { notice: flag === 'connected' ? 'Connected. Now choose which calendar to share.' : flag === 'declined' ? 'Google was not given access, so nothing was connected.' : 'Connecting to Google did not work. Try again.' };
+  });
   const page = usePage();
 
   const refresh = useCallback(async (): Promise<void> => {
@@ -86,12 +94,16 @@ function Crm() {
           </nav>
           <div className="header-end">
             <span className="who">{me.user.name ?? me.user.email}</span>
+            <button className="btn btn-ghost" onClick={() => setCalendar({})}>
+              Calendar
+            </button>
             <button className="btn btn-ghost" onClick={() => void logout()}>
               Sign out
             </button>
           </div>
         </div>
       </header>
+      {calendar && <CalendarDialog role={active.role} bandName={active.name} notice={calendar.notice} onClose={() => setCalendar(null)} />}
       <main className="page">
         <BandContext.Provider value={{ name: active.name, slug: active.slug }}>
           {page === 'pipeline' && <Pipeline key={`${active.id}-${epoch}`} role={active.role} />}

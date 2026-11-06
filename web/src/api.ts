@@ -14,7 +14,7 @@ export function setUnauthorizedHandler(fn: () => void): void {
   onUnauthorized = fn;
 }
 
-export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT', url: string, body?: unknown): Promise<T> {
+export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method,
     credentials: 'same-origin',
@@ -42,6 +42,11 @@ const MESSAGES: Record<string, string> = {
   invalid_request: 'Some details are not valid. Check the fields and try again.',
   bad_origin: 'This request was blocked. Reload the page and try again.',
   not_found: 'That record no longer exists. Reload the page.',
+  calendar_not_configured: 'The calendar link is not turned on for this server yet.',
+  connect_first: 'Connect your Google Calendar first.',
+  needs_reconnect: 'Google no longer accepts your sign-in. Connect again.',
+  google_failed: 'Google could not be reached. Try again in a moment.',
+  unknown_calendar: 'That calendar is not on your Google account.',
   email_not_set_up: 'Set up who the email comes from first. An admin can do this on the Templates page.',
   email_not_configured: 'Email sending is not turned on for this server yet.',
   address_blocked: 'This address bounced or is blocked, so it cannot be emailed.',
@@ -66,6 +71,7 @@ const MESSAGES: Record<string, string> = {
 export function errorText(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 429 && err.code !== 'daily_limit') return 'Too many attempts. Wait a minute and try again.';
+    if ((err.code === 'google_failed' || err.code === 'needs_reconnect') && err.detail) return err.detail;
     if (err.code === 'send_failed' && err.detail) return `${MESSAGES.send_failed} ${err.detail}`;
     return MESSAGES[err.code] ?? 'Something went wrong. Try again.';
   }
