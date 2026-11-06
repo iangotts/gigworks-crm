@@ -1,7 +1,7 @@
 // Import the GW-GIG exports.
 //
 //   npm run import -- --dir /path/to/exports --dry-run          read the files and write the report only
-//   npm run import -- --dir /path/to/exports                    load into the database DATABASE_URL points at
+//   npm run import -- --dir /path/to/exports --yes              load into the database DATABASE_URL points at
 //
 // Runs as the database owner. Do a dry run first, then rehearse into a scratch database (twice: the second
 // run must add nothing), and only then run it against production. Reports go to --out (default ./import-report).
@@ -14,7 +14,7 @@ import { parseCsv, type Row } from '../import/csv.js';
 import { loadPlan } from '../import/load.js';
 import { buildPlan, type Exports, type Plan } from '../import/plan.js';
 
-const { values } = parseArgs({ options: { dir: { type: 'string' }, out: { type: 'string' }, 'dry-run': { type: 'boolean' }, today: { type: 'string' }, 'gigs-from': { type: 'string' } } });
+const { values } = parseArgs({ options: { dir: { type: 'string' }, out: { type: 'string' }, 'dry-run': { type: 'boolean' }, yes: { type: 'boolean' }, today: { type: 'string' }, 'gigs-from': { type: 'string' } } });
 if (!values.dir) {
   console.error('Need --dir, the folder holding the exported CSV files.');
   process.exit(2);
@@ -87,7 +87,13 @@ try {
   if (values['dry-run']) {
     console.log('Dry run: nothing was written to the database.');
   } else {
-    console.log('\nLoading');
+    const target = new URL(config.databaseUrl);
+    const where = `${target.hostname || target.searchParams.get('host') || 'local socket'}${target.port ? `:${target.port}` : ''}${target.pathname}`;
+    if (!values.yes) {
+      console.log(`\nNot loaded. This would write to ${where}. Add --yes to load, or --dry-run to only read.`);
+      process.exit(1);
+    }
+    console.log(`\nLoading into ${where}`);
     const res = await loadPlan(pool, plan);
     writeFileSync(join(out, 'load.json'), JSON.stringify(res, null, 2));
     for (const [slug, counts] of Object.entries(res.tenants)) {

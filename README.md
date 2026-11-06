@@ -81,8 +81,9 @@ The rules Ian confirmed on 5 Nov 2026 are in the plan doc and in `import_mapping
 ```bash
 # 1. Read the files and write the reports. Nothing is written to the database.
 npm run import -- --dir /path/to/exports --dry-run
-# 2. Load. Safe to run again: anything already loaded is left alone and the second run adds nothing.
-npm run import -- --dir /path/to/exports
+# 2. Load. It names the database it will write to and refuses without --yes. Safe to run again:
+#    anything already loaded is left alone and the second run adds nothing.
+npm run import -- --dir /path/to/exports --yes
 ```
 
 Use `--out` to choose where the reports go (default `import-report/`, ignored by git because it holds personal data) and `--gigs-from` to change the cut-off date. The reports are `report.md` (counts and what was left behind), `flags.csv` (rows to look at) and `spot-check.md` (20 gigs and 20 contacts, GW-GIG on the left and GW-CRM on the right). The command also compares its counts with the plan and prints DIFF for any that differ.
