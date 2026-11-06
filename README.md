@@ -60,6 +60,15 @@ Not done yet: password reset by email, inviting users from the screen (use `crea
 - Google keeps refresh tokens for an app in "Testing" status for only 7 days. Publish the app (it can stay unverified for a small group) so sign-ins last.
 - A calendar problem never blocks saving a gig. It shows on the gig with a Try again button.
 
+## Money (phase 8)
+
+- Each gig has a Money section: the quoted fee, a deposit and balance plan, payments with a due date, and who paid when and how. A person marks each payment paid; nothing is guessed from a bank.
+- All sums are done in the database in exact decimal, never in the browser or in floating point. "Plan deposit and balance" rounds the deposit once and makes the balance the remainder, so the two always add up to the fee. Status is Unpaid, Part paid, Paid or Overpaid, and a note shows when planned payments do not match the fee.
+- A received payment cannot be removed; mark it not paid first (this is logged on the gig). Marking paid or not paid is logged as a note.
+- Follow-ups shows Payments: unpaid payments with a due date, and played gigs that still owe money. Confirmed and Played cards on the pipeline show a payment chip.
+- Marking a gig Played adds a to-do two days out to ask the contact for a testimonial, once per gig.
+- There is no ledger or accounting: no invoices, tax or bank links.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.

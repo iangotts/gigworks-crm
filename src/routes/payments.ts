@@ -53,7 +53,7 @@ export function registerPaymentRoutes(app: FastifyInstance, deps: Deps): void {
   const moneyFor = async (c: pg.PoolClient, gigId: string) => {
     const m = await c.query(`SELECT ${MONEY} FROM gig_money WHERE gig_id = $1`, [gigId]);
     if (!m.rows[0]) return null;
-    const p = await c.query(`SELECT ${COLUMNS} FROM payment WHERE gig_id = $1 ORDER BY paid_on NULLS LAST, due_on NULLS LAST, created_at`, [gigId]);
+    const p = await c.query(`SELECT ${COLUMNS} FROM payment WHERE gig_id = $1 ORDER BY CASE kind WHEN 'deposit' THEN 0 WHEN 'balance' THEN 1 ELSE 2 END, due_on NULLS LAST, created_at`, [gigId]);
     return { ...m.rows[0], payments: p.rows };
   };
   const liveGig = async (c: pg.PoolClient, gigId: string): Promise<'ok' | 'missing' | 'archived'> => {

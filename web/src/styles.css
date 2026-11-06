@@ -1256,3 +1256,50 @@ a.btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }
 .cal-members { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .cal-members li.busy { color: var(--alert); }
 .cal-members li.free { color: var(--ink-2); }
+
+/* Money */
+.money-sum {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+.money-sum dt {
+  font-size: 0.8125rem;
+  color: var(--muted, #5b5470);
+}
+.money-sum dd {
+  margin: 0.125rem 0 0;
+  font-weight: 600;
+  font-size: 1.0625rem;
+}
+.pay-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+.pay-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(24, 8, 48, 0.12);
+}
+.pay-main {
+  display: flex;
+  flex-direction: column;
+}
+.pay-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.pay-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin: 0.5rem 0 0.75rem;
+  width: 100%;
+}

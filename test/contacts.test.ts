@@ -192,7 +192,7 @@ describe('follow-ups', () => {
     expect(f.gigs).toHaveLength(0);
     expect(f.replies).toHaveLength(0);
     const fb = (await call('GET', '/api/followups', b)).json();
-    expect(fb).toEqual({ tasks: [], gigs: [], replies: [] });
+    expect(fb).toEqual({ tasks: [], gigs: [], replies: [], payments: [], owed: [] });
   });
 });
 

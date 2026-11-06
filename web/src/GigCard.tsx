@@ -1,3 +1,4 @@
+import { payChip } from './money';
 import { dateParts, feeText, flagsFor, STAGES, stageLabel } from './stages';
 import type { Gig, StageKey } from './types';
 
@@ -17,6 +18,7 @@ export function GigCard({ gig, today, canEdit, dragging, onOpen, onMove, onDragS
   const thisYear = String(Number(today.slice(0, 4)));
   const fee = feeText(gig);
   const flags = flagsFor(gig, today);
+  const pay = payChip(gig.stage, gig.pay_state);
   const sub = [gig.venue_name, gig.contact_name].filter(Boolean);
 
   return (
@@ -53,9 +55,10 @@ export function GigCard({ gig, today, canEdit, dragging, onOpen, onMove, onDragS
             {d ? `${d.weekday} ${d.month} ${d.day} ${d.year}. ` : 'No date. '}Stage: {stageLabel(gig.stage)}.
           </span>
         </button>
-        {(fee || gig.platform || flags.length > 0) && (
+        {(fee || pay || gig.platform || flags.length > 0) && (
           <div className="chips">
             {fee && <span className="chip money">{fee}</span>}
+            {pay && <span className={`chip${pay.alert ? ' alert' : ''}`}>{pay.text}</span>}
             {flags.map((f) => (
               <span key={f.text} className={`chip${f.tone === 'alert' ? ' alert' : ''}`}>
                 {f.text}

@@ -3,6 +3,7 @@ import { dueText, dueTone } from './activity';
 import { api, errorText } from './api';
 import { ContactDrawer } from './ContactDrawer';
 import { GigDrawer } from './GigDrawer';
+import { dollars } from './money';
 import { shortDate, stageLabel, todayIso, isBefore } from './stages';
 import type { Followups, Role } from './types';
 
@@ -13,6 +14,8 @@ type Item = {
   title: string;
   who: string | null;
   note: string;
+  chip?: string;
+  action?: string;
   done: () => Promise<void>;
   open: () => void;
 };
@@ -94,6 +97,34 @@ export function FollowUps({ role }: { role: Role }) {
       }))
     : [];
 
+  const KIND = { deposit: 'Deposit', balance: 'Balance', other: 'Payment' } as const;
+  const payments: Item[] = data
+    ? [
+        ...data.payments.map((p): Item => ({
+          key: `p-${p.id}`,
+          due: p.due_on,
+          tone: isBefore(p.due_on, today) ? 'overdue' : p.due_on === today ? 'today' : 'later',
+          title: `${KIND[p.kind]} ${dollars(p.amount)}, ${p.gig_title}`,
+          who: p.contact_name,
+          note: 'Payment due',
+          done: finish(() => api('PATCH', `/api/payments/${p.id}`, { paid_on: today }), 'Marked paid'),
+          open: () => setGigId(p.gig_id),
+        })),
+        ...data.owed.map((g): Item => ({
+          key: `o-${g.id}`,
+          due: '9999-12-31',
+          tone: 'overdue',
+          title: `${dollars(g.outstanding)} still owed, ${g.title}`,
+          who: g.contact_name,
+          note: 'Played, not paid up',
+          chip: 'Owed',
+          action: 'Open gig',
+          done: async () => setGigId(g.id),
+          open: () => setGigId(g.id),
+        })),
+      ].sort((a, b) => a.due.localeCompare(b.due))
+    : [];
+
   const render = (items: Item[], doneLabel: string, empty: string) =>
     items.length === 0 ? (
       <p className="empty">{empty}</p>
@@ -106,11 +137,11 @@ export function FollowUps({ role }: { role: Role }) {
               <span className="card-sub">{[i.who, i.note].filter(Boolean).join(', ')}</span>
             </button>
             <span className={`chip${i.tone === 'overdue' ? ' alert' : ''}`}>
-              {i.due.startsWith('9999') ? 'No date' : i.due.length === 10 ? (i.tone === 'overdue' ? `Overdue, ${shortDate(i.due)}` : i.tone === 'today' ? 'Today' : shortDate(i.due)) : dueText(i.due)}
+              {i.chip ?? (i.due.startsWith('9999') ? 'No date' : i.due.length === 10 ? (i.tone === 'overdue' ? `Overdue, ${shortDate(i.due)}` : i.tone === 'today' ? 'Today' : shortDate(i.due)) : dueText(i.due))}
             </span>
             {canEdit && (
               <button className="btn btn-secondary" onClick={() => void i.done()}>
-                {doneLabel}
+                {i.action ?? doneLabel}
               </button>
             )}
           </li>
@@ -143,6 +174,14 @@ export function FollowUps({ role }: { role: Role }) {
             {render(followups, 'Done', 'Nothing to follow up. Add a to-do from a contact or a gig.')}
           </section>
         </div>
+      )}
+      {data && (
+        <section aria-labelledby="fu-pay">
+          <h2 id="fu-pay" className="list-head">
+            Payments <span className="count">{payments.length}</span>
+          </h2>
+          {render(payments, 'Mark paid', 'No payments due. Plan a deposit and balance on a confirmed gig.')}
+        </section>
       )}
       {!data && !error && <p className="hint">Loading</p>}
 

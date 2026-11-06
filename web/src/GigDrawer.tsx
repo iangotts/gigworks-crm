@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText } from './api';
 import { ActivityLog } from './ActivityLog';
 import { CalendarPanel } from './CalendarPanel';
+import { MoneyPanel } from './MoneyPanel';
 import { EmailComposer } from './EmailComposer';
 import { LinkBuilder } from './LinkBuilder';
 import { STAGES } from './stages';
@@ -250,6 +251,8 @@ export function GigDrawer({ id, canEdit, onClose, onSaved, onArchived }: Props) 
                 <textarea id="f-notes" disabled={!canEdit} value={String(form.notes)} onChange={(e) => set('notes', e.target.value)} />
               </div>
             </div>
+
+            <MoneyPanel gigId={id} canEdit={canEdit} feeKey={`${detail.updated_at}|${detail.fee_quoted}`} onChange={() => setLogKey((n) => n + 1)} />
 
             <CalendarPanel gigId={id} canEdit={canEdit} refresh={`${detail.updated_at}|${detail.stage}`} />
 

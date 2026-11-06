@@ -35,6 +35,9 @@ export interface Gig {
   venue_id: string | null;
   contact_name: string | null;
   venue_name: string | null;
+  pay_state?: 'none' | 'unpaid' | 'part_paid' | 'paid' | 'overpaid' | null;
+  received?: string | null;
+  outstanding?: string | null;
   updated_at: string;
 }
 
@@ -158,6 +161,8 @@ export interface Followups {
   tasks: LogItem[];
   gigs: (FollowupGig & { next_action_at: string })[];
   replies: (FollowupGig & { reply_owed_by: string })[];
+  payments: { id: string; gig_id: string; gig_title: string; contact_id: string | null; contact_name: string | null; kind: 'deposit' | 'balance' | 'other'; amount: string; due_on: string }[];
+  owed: { id: string; title: string; event_date: string | null; contact_id: string | null; contact_name: string | null; outstanding: string }[];
 }
 
 export interface LinkTarget {
