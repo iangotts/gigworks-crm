@@ -90,6 +90,24 @@ Use `--out` to choose where the reports go (default `import-report/`, ignored by
 
 Rehearse into a scratch database first (`createdb`, `scripts/db.sh migrate`, `scripts/db.sh seed`), run it twice, then check the spot-check by hand before running against production.
 
+## Deploying to Railway (phase 10)
+
+One Railway project holds two things: a PostgreSQL database and one service built from this repo. The `Dockerfile` builds the API and the web screens into one container. On every start it applies any new migrations (`dist/cli/migrate.js`, which needs no psql) and then starts the server. `railway.json` sets the health check to `/api/health`.
+
+Variables on the service:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | Reference the Postgres service: `${{Postgres.DATABASE_URL}}` |
+| `NODE_ENV` | `production` |
+| `FORM_SECRET` | `openssl rand -hex 32`. Required. Keep it: changing it breaks every unsubscribe link already sent |
+| `PUBLIC_URL` | The address people use, for example `https://crm.example.com` |
+| `ALLOWED_ORIGINS` | The same address |
+| `SENDGRID_API_KEY`, `EMAIL_PROVIDER` | When you have a SendGrid key. Without one, production refuses to send |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CALENDAR_KEY` | When Google is set up. `CALENDAR_KEY` is required once the Google keys are set |
+
+`COOKIE_SECURE` is true by default in production. After the first deploy, load the two bands once with `node dist/cli/migrate.js --seed` (Railway shell, or locally with the public database address). Logins and the import (`npm run create-user`, `npm run import`) run from a computer with this repo, pointed at the database's public address from Railway.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.
