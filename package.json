@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "create-user": "tsx src/cli/create-user.ts",
+    "import": "tsx src/cli/import.ts",
     "db:migrate": "scripts/db.sh migrate",
     "db:seed": "scripts/db.sh seed",
     "db:test": "scripts/db.sh test"

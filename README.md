@@ -69,6 +69,26 @@ Not done yet: password reset by email, inviting users from the screen (use `crea
 - Marking a gig Played adds a to-do two days out to ask the contact for a testimonial, once per gig.
 - There is no ledger or accounting: no invoices, tax or bank links.
 
+## Importing from GW-GIG (phase 9)
+
+The rules Ian confirmed on 5 Nov 2026 are in the plan doc and in `import_mapping` (see the seed). The tool follows them:
+
+- Only Jane Blonde and ROCKSOLID come across. Jane Blonde gigs dated on or after 5 Nov 2024, with their notes, actions, crew and people. Fans who were deleted or unsubscribed are left behind, fans with the same email become one contact, and the fans flagged RockSolid are also copied into ROCKSOLID as contacts only.
+- Fee-Quote that is a plain number goes to the fee, anything else to the fee note as typed. A numeric Fee-Paid becomes one payment dated on the gig (or today for a future gig) and is listed in the flags for a hand check. Blank Fee-Paid is not read as unpaid or paid, but a played gig with a fee and no payment shows under Owed on Follow-ups.
+- Logins come from the band members. They have no password: set one with `npm run create-user`.
+- The exports do not say which time zone their times are in, so America/Los_Angeles is assumed.
+
+```bash
+# 1. Read the files and write the reports. Nothing is written to the database.
+npm run import -- --dir /path/to/exports --dry-run
+# 2. Load. Safe to run again: anything already loaded is left alone and the second run adds nothing.
+npm run import -- --dir /path/to/exports
+```
+
+Use `--out` to choose where the reports go (default `import-report/`, ignored by git because it holds personal data) and `--gigs-from` to change the cut-off date. The reports are `report.md` (counts and what was left behind), `flags.csv` (rows to look at) and `spot-check.md` (20 gigs and 20 contacts, GW-GIG on the left and GW-CRM on the right). The command also compares its counts with the plan and prints DIFF for any that differ.
+
+Rehearse into a scratch database first (`createdb`, `scripts/db.sh migrate`, `scripts/db.sh seed`), run it twice, then check the spot-check by hand before running against production.
+
 ## Database
 
 Postgres 15 or later (the schema uses `ON DELETE SET NULL (column)`). Needs `psql` and a `DATABASE_URL` for a login that owns the database. On Railway the default login is a superuser, which is what the import and the tests need.

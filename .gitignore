@@ -9,3 +9,6 @@ exports/
 *.bubble
 dist/
 !.env.example
+
+# Import reports hold personal data from the exports
+import-report/
