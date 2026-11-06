@@ -18,6 +18,7 @@ import { registerContactRoutes } from './routes/contacts.js';
 import { registerEmailRoutes } from './routes/email.js';
 import { registerGigRoutes } from './routes/gigs.js';
 import { registerLinkRoutes } from './routes/links.js';
+import { registerPaymentRoutes } from './routes/payments.js';
 import { registerPublicRoutes } from './routes/public.js';
 import { registerSubscriberRoutes } from './routes/subscribers.js';
 import { registerTemplateRoutes } from './routes/templates.js';
@@ -84,6 +85,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   const calendar = google ? new CalendarService(pool, config, google) : null;
   registerGigRoutes(app, deps, calendar);
   registerCalendarRoutes(app, deps, calendar);
+  registerPaymentRoutes(app, deps);
   registerActivityRoutes(app, deps);
   registerPublicRoutes(app, deps, opts.publicLimit ?? { subscribe: 5, other: 60 });
   registerSubscriberRoutes(app, deps);

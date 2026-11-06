@@ -139,7 +139,23 @@ export function registerActivityRoutes(app: FastifyInstance, deps: Deps): void {
            FROM gig g LEFT JOIN contact c ON c.tenant_id = g.tenant_id AND c.id = g.contact_id
           WHERE ${open} AND g.reply_owed_by IS NOT NULL ORDER BY g.reply_owed_by LIMIT 500`,
       );
-      return { tasks: tasks.rows, gigs: gigs.rows, replies: replies.rows };
+      // Money still to come in. Dates are returned as they are; the browser decides what is overdue.
+      const payments = await c.query(
+        `SELECT p.id, p.gig_id, g.title AS gig_title, g.contact_id, ${name} AS contact_name, p.kind, p.amount::text AS amount, p.due_on
+           FROM payment p JOIN gig g ON g.tenant_id = p.tenant_id AND g.id = p.gig_id
+           LEFT JOIN contact c ON c.tenant_id = g.tenant_id AND c.id = g.contact_id
+          WHERE p.paid_on IS NULL AND p.due_on IS NOT NULL AND g.archived_at IS NULL AND g.stage <> 'lost'
+          ORDER BY p.due_on LIMIT 500`,
+      );
+      // A gig that has been played and is not paid up, with no due date to go by.
+      const owed = await c.query(
+        `SELECT g.id, g.title, g.event_date, g.contact_id, ${name} AS contact_name, m.outstanding::text AS outstanding
+           FROM gig g JOIN gig_money m ON m.gig_id = g.id LEFT JOIN contact c ON c.tenant_id = g.tenant_id AND c.id = g.contact_id
+          WHERE g.stage = 'played' AND g.archived_at IS NULL AND m.outstanding > 0
+            AND NOT EXISTS (SELECT 1 FROM payment p WHERE p.gig_id = g.id AND p.paid_on IS NULL AND p.due_on IS NOT NULL)
+          ORDER BY g.event_date NULLS LAST LIMIT 500`,
+      );
+      return { tasks: tasks.rows, gigs: gigs.rows, replies: replies.rows, payments: payments.rows, owed: owed.rows };
     });
     return out;
   });

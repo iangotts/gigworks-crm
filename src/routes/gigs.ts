@@ -66,10 +66,12 @@ const LIST_SQL = `
          g.budget, g.fee_quoted, g.fee_note, g.next_action_at, g.reply_owed_by, g.decision,
          g.contact_id, g.venue_id, g.updated_at,
          nullif(trim(concat_ws(' ', c.first_name, c.last_name)), '') AS contact_name,
-         v.name AS venue_name
+         v.name AS venue_name,
+         m.state AS pay_state, m.received::text AS received, m.outstanding::text AS outstanding
     FROM gig g
     LEFT JOIN contact c ON c.tenant_id = g.tenant_id AND c.id = g.contact_id
-    LEFT JOIN venue v   ON v.tenant_id = g.tenant_id AND v.id = g.venue_id`;
+    LEFT JOIN venue v   ON v.tenant_id = g.tenant_id AND v.id = g.venue_id
+    LEFT JOIN gig_money m ON m.gig_id = g.id`;
 
 const DETAIL_SQL = `
   SELECT g.*,
@@ -217,6 +219,7 @@ export function registerGigRoutes(app: FastifyInstance, deps: Deps, calendar: Ca
         }
         if (b.stage !== undefined && b.stage !== before.stage) {
           await logStageChange(c, ctx, id, before.stage, b.stage);
+          if (b.stage === 'played') await askForTestimonial(c, ctx, id);
         }
         const row = await c.query(`${LIST_SQL} WHERE g.id = $1`, [id]);
         return { row: row.rows[0] };
@@ -232,6 +235,20 @@ export function registerGigRoutes(app: FastifyInstance, deps: Deps, calendar: Ca
       throw err;
     }
   });
+
+  // After the gig, a reminder to ask the client for a testimonial. Once per gig, however often the stage flips.
+  async function askForTestimonial(c: pg.PoolClient, ctx: TenantContext, gigId: string): Promise<void> {
+    await c.query(
+      `INSERT INTO activity (tenant_id, kind, gig_id, contact_id, body, due_at, created_by)
+       SELECT g.tenant_id, 'task', g.id, g.contact_id,
+              'Ask ' || coalesce(nullif(trim(concat_ws(' ', ct.first_name, ct.last_name)), ''), 'the client') || ' for a testimonial',
+              now() + interval '2 days', $2
+         FROM gig g JOIN contact ct ON ct.tenant_id = g.tenant_id AND ct.id = g.contact_id
+        WHERE g.id = $1
+          AND NOT EXISTS (SELECT 1 FROM activity a WHERE a.gig_id = g.id AND a.kind = 'task' AND a.body LIKE 'Ask % for a testimonial')`,
+      [gigId, ctx.userId],
+    );
+  }
 
   // A short note when a gig moves, so the history shows how it got here.
   async function logStageChange(
